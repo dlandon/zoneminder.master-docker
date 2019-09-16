@@ -19,9 +19,18 @@ else
 	echo "File zm.conf already moved"
 fi
 
-# Handle the zmeventnotification.ini file
+# Handle the zmeventnotification.ini & daemon files
+
+	if [ -f /root/zmeventnotification/zmeventnotification.pl ]; then
+		echo "Moving the event notification server"
+		mv /root/zmeventnotification/zmeventnotification.pl /usr/bin
+    chmod +x /usr/bin/zmeventnotification.pl 2>/dev/null
+	else
+		echo "Event notification server already moved"
+	fi
+
 if [ -f /root/zmeventnotification.ini ]; then
-	echo "Moving zmeventnotification.ini"
+	echo "Moving zmeventnotificatio]n.ini"
 	cp /root/zmeventnotification.ini /config/zmeventnotification.ini.default
 	if [ ! -f /config/zmeventnotification.ini ]; then
 		mv /root/zmeventnotification.ini /config/zmeventnotification.ini
@@ -67,17 +76,6 @@ else
 	chmod 644 /usr/share/perl5/ZoneMinder/Control/* 2>/dev/null
 fi
 
-# If hook folder exists, copy files into image
-if [ ! -d /config/hook ]; then
-	echo "Creating hook folder in config folder"
-	mkdir /config/hook
-fi
-
-# Create known_faces folder if it doesn't exist
-if [ ! -d /config/hook/known_faces ]; then
-	echo "Creating hook/known_faces folder in config folder"
-	mkdir -p /config/hook/known_faces
-fi
 
 # Copy conf files if there are any
 if [ -d /config/conf ]; then
@@ -236,35 +234,55 @@ echo "Setting shared memory to : $SHMEM of `awk '/MemTotal/ {print $2}' /proc/me
 umount /dev/shm
 mount -t tmpfs -o rw,nosuid,nodev,noexec,relatime,size=${SHMEM} tmpfs /dev/shm
 
-# Install hook packages
-if [ "$INSTALL_HOOK" == "1" ]; then
-	echo "Install hook processing..."
 
-	if [ -f /usr/bin/setup.py ]; then
+
+# Install hook packages, if enabled
+
+if [ "$INSTALL_HOOK" == "1" ]; then
+	echo "Installing machine learning modules & hooks..."
+
+  # If hook folder exists, copy files into image
+  if [ ! -d /config/hook ]; then
+    echo "Creating hook folder in config folder"
+    mkdir /config/hook
+  fi
+
+
+  # hook helpers are only needed if hooks are enabled
+	if [ -d /root/zmeventnotification/zmes_hook_helpers ]; then
 		# Python modules needed for hook processing
-		apt-get -y install python3-pip cmake
-		pip3 install numpy opencv-python imutils configparser Shapely future pyzmutils requests
-	fi
+    apt-get -y install python3-pip cmake
+    # pip3 will take care on installing dependent packages 
+    pip3 install future
+		pip3 install /root/zmeventnotification
+    rm -rf /root/zmeventnotification/zmes_hook_helpers
+  else
+    echo "hook python modules are already installed"
+  fi
 
 	# Download models files
 	if [ "$INSTALL_TINY_YOLO" == "1" ]; then
 		if [ ! -d /config/hook/models/tinyyolo ]; then
-			echo "Downlading tiny yolo files"
+			echo "Downloading tiny yolo models and configurations..."
 			mkdir -p /config/hook/models/tinyyolo
 			wget https://pjreddie.com/media/files/yolov3-tiny.weights -O /config/hook/models/tinyyolo/yolov3-tiny.weights
 			wget https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-tiny.cfg -O /config/hook/models/tinyyolo/yolov3-tiny.cfg
 			wget https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names -O /config/hook/models/tinyyolo/yolov3-tiny.txt
-		fi
+    else
+      echo "Tiny yolo files have already been downloading, skipping..."
+    fi
 	fi
 
 	if [ "$INSTALL_YOLO" == "1" ]; then
 		if [ ! -d /config/hook/models/yolov3 ]; then
-			echo "Downloading yolo files"
+			echo "Downloading yolo models and configurations..."
 			mkdir -p /config/hook/models/yolov3
 			wget https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg -O /config/hook/models/yolov3/yolov3.cfg
 			wget https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names -O /config/hook/models/yolov3/yolov3_classes.txt
 			wget https://pjreddie.com/media/files/yolov3.weights -O /config/hook/models/yolov3/yolov3.weights
-		fi
+    else
+      echo "Yolo files have already been downloading, skipping..."
+    fi
 	fi
 
 	# Handle the objectconfig.ini file
@@ -312,20 +330,18 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 	chmod +x /usr/bin/detect* 2>/dev/null
 	ln -sf /config/hook/objectconfig.ini /etc/zm/ 2>/dev/null
 
-	if [ "$INSTALL_FACE" == "1" ] && [ -f /usr/bin/setup.py ]; then
+	if [ "$INSTALL_FACE" == "1" ]; then
+    # Create known_faces folder if it doesn't exist
+    if [ ! -d /config/hook/known_faces ]; then
+      echo "Creating hook/known_faces folder in config folder"
+      mkdir -p /config/hook/known_faces
+    fi
 		# Install for face recognition
 		apt-get -y install libopenblas-dev liblapack-dev libblas-dev
  		pip3 install face_recognition
 	fi
 
-	if [ -f /usr/bin/setup.py ]; then
-		# Run setup
-		cd /usr/bin/
-		setup.py install
-		rm /usr/bin/setup.py
-	fi
-
-	echo "Hook processing installed"
+	echo "Hook installation process completed"
 fi
 
 echo "Starting services..."

@@ -19,26 +19,26 @@ else
 	echo "File zm.conf already moved"
 fi
 
-# Handle the zmeventnotification.ini & daemon files
-
-	if [ -f /root/zmeventnotification/zmeventnotification.pl ]; then
-		echo "Moving the event notification server"
-		mv /root/zmeventnotification/zmeventnotification.pl /usr/bin
-    chmod +x /usr/bin/zmeventnotification.pl 2>/dev/null
-	else
-		echo "Event notification server already moved"
-	fi
-
-if [ -f /root/zmeventnotification.ini ]; then
-	echo "Moving zmeventnotificatio]n.ini"
-	cp /root/zmeventnotification.ini /config/zmeventnotification.ini.default
+# Handle the zmeventnotification.ini file
+if [ -f /root/zmeventnotification/zmeventnotification.ini ]; then
+	echo "Moving zmeventnotification.ini"
+	cp /root/zmeventnotification/zmeventnotification.ini /config/zmeventnotification.ini.default
 	if [ ! -f /config/zmeventnotification.ini ]; then
-		mv /root/zmeventnotification.ini /config/zmeventnotification.ini
+		mv /root/zmeventnotification/zmeventnotification.ini /config/zmeventnotification.ini
 	else
-		rm -rf /root/zmeventnotification.ini
+		rm -rf /root/zmeventnotification/zmeventnotification.ini
 	fi
 else
 	echo "File zmeventnotification.ini already moved"
+fi
+
+# Handle the zmeventnotification.pl & daemon files
+if [ -f /root/zmeventnotification/zmeventnotification.pl ]; then
+	echo "Moving the event notification server"
+	mv /root/zmeventnotification/zmeventnotification.pl /usr/bin
+	chmod +x /usr/bin/zmeventnotification.pl 2>/dev/null
+else
+	echo "Event notification server already moved"
 fi
 
 # Move ssmtp configuration if it doesn't exist
@@ -75,7 +75,6 @@ else
 	chown root:root /usr/share/perl5/ZoneMinder/Control/* 2>/dev/null
 	chmod 644 /usr/share/perl5/ZoneMinder/Control/* 2>/dev/null
 fi
-
 
 # Copy conf files if there are any
 if [ -d /config/conf ]; then
@@ -234,31 +233,25 @@ echo "Setting shared memory to : $SHMEM of `awk '/MemTotal/ {print $2}' /proc/me
 umount /dev/shm
 mount -t tmpfs -o rw,nosuid,nodev,noexec,relatime,size=${SHMEM} tmpfs /dev/shm
 
-
-
 # Install hook packages, if enabled
-
 if [ "$INSTALL_HOOK" == "1" ]; then
 	echo "Installing machine learning modules & hooks..."
 
-  # If hook folder exists, copy files into image
-  if [ ! -d /config/hook ]; then
-    echo "Creating hook folder in config folder"
-    mkdir /config/hook
-  fi
+	if [ -f /root/zmeventnotification/setup.py ]; then
+		# If hook folder exists, copy files into image
+		if [ ! -d /config/hook ]; then
+			echo "Creating hook folder in config folder"
+			mkdir /config/hook
+		fi
 
-
-  # hook helpers are only needed if hooks are enabled
-	if [ -d /root/zmeventnotification/zmes_hook_helpers ]; then
 		# Python modules needed for hook processing
-    apt-get -y install python3-pip cmake
-    # pip3 will take care on installing dependent packages 
-    pip3 install future
+		apt-get -y install python3-pip cmake
+
+		# pip3 will take care on installing dependent packages
+		pip3 install future
 		pip3 install /root/zmeventnotification
-    rm -rf /root/zmeventnotification/zmes_hook_helpers
-  else
-    echo "hook python modules are already installed"
-  fi
+	    rm -rf /root/zmeventnotification/zmes_hook_helpers
+	fi
 
 	# Download models files
 	if [ "$INSTALL_TINY_YOLO" == "1" ]; then
@@ -268,9 +261,9 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 			wget https://pjreddie.com/media/files/yolov3-tiny.weights -O /config/hook/models/tinyyolo/yolov3-tiny.weights
 			wget https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-tiny.cfg -O /config/hook/models/tinyyolo/yolov3-tiny.cfg
 			wget https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names -O /config/hook/models/tinyyolo/yolov3-tiny.txt
-    else
-      echo "Tiny yolo files have already been downloading, skipping..."
-    fi
+		else
+			echo "Tiny Yolo files have already been downloaded, skipping..."
+		fi
 	fi
 
 	if [ "$INSTALL_YOLO" == "1" ]; then
@@ -280,36 +273,36 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 			wget https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg -O /config/hook/models/yolov3/yolov3.cfg
 			wget https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names -O /config/hook/models/yolov3/yolov3_classes.txt
 			wget https://pjreddie.com/media/files/yolov3.weights -O /config/hook/models/yolov3/yolov3.weights
-    else
-      echo "Yolo files have already been downloading, skipping..."
-    fi
+		else
+			echo "Yolo files have already been downloaded, skipping..."
+	    fi
 	fi
 
 	# Handle the objectconfig.ini file
-	if [ -f /root/objectconfig.ini ]; then
+	if [ -f /root/zmeventnotification/objectconfig.ini ]; then
 		echo "Moving objectconfig.ini"
-		cp /root/objectconfig.ini /config/hook/objectconfig.ini.default
+		cp /root/zmeventnotification/objectconfig.ini /config/hook/objectconfig.ini.default
 		if [ ! -f /config/hook/objectconfig.ini ]; then
-			mv /root/objectconfig.ini /config/hook/objectconfig.ini
+			mv /root/zmeventnotification/objectconfig.ini /config/hook/objectconfig.ini
 		else
-			rm -rf /root/objectconfig.ini
+			rm -rf /root/zmeventnotification/objectconfig.ini
 		fi
 	else
 		echo "File objectconfig.ini already moved"
 	fi
 
 	# Handle the detect_wrapper.sh file
-	if [ -f /root/detect_wrapper.sh ]; then
+	if [ -f /root/zmeventnotification/detect_wrapper.sh ]; then
 		echo "Moving detect_wrapper.sh"
-		mv /root/detect_wrapper.sh /config/hook/detect_wrapper.sh
+		mv /root/zmeventnotification/detect_wrapper.sh /config/hook/detect_wrapper.sh
 	else
 		echo "File detect_wrapper.sh already moved"
 	fi
 
 	# Handle the detect.py file
-	if [ -f /root/detect.py ]; then
+	if [ -f /root/zmeventnotification/detect.py ]; then
 		echo "Moving detect.py"
-		mv /root/detect.py /config/hook/detect.py
+		mv /root/zmeventnotification/detect.py /config/hook/detect.py
 	else
 		echo "File detect.py already moved"
 	fi
@@ -330,18 +323,21 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 	chmod +x /usr/bin/detect* 2>/dev/null
 	ln -sf /config/hook/objectconfig.ini /etc/zm/ 2>/dev/null
 
-	if [ "$INSTALL_FACE" == "1" ]; then
-    # Create known_faces folder if it doesn't exist
-    if [ ! -d /config/hook/known_faces ]; then
-      echo "Creating hook/known_faces folder in config folder"
-      mkdir -p /config/hook/known_faces
-    fi
+	if [ "$INSTALL_FACE" == "1" ] && [ -f /root/zmeventnotification/setup.py ]; then
+		# Create known_faces folder if it doesn't exist
+		if [ ! -d /config/hook/known_faces ]; then
+			echo "Creating hook/known_faces folder in config folder"
+			mkdir -p /config/hook/known_faces
+		fi
+
 		# Install for face recognition
 		apt-get -y install libopenblas-dev liblapack-dev libblas-dev
  		pip3 install face_recognition
 	fi
 
-	echo "Hook installation process completed"
+	rm -rf /root/zmeventnotification/setup.py
+
+	echo "Hook installation completed"
 fi
 
 echo "Starting services..."

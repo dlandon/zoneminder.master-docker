@@ -62,8 +62,6 @@ You can start/stop/restart the container anytime. You don't need to run the comm
 
 - Push notifications with images will not work unless you replace the self-signed certificates that are auto-generated. Feel free to use the excellent and free [LetsEncrypt](https://letsencrypt.org) service if you'd like.
 
-
-
 #### Usage
 
 To access the Zoneminder gui, browse to: `https://<your host ip>:8443/zm`
@@ -71,6 +69,9 @@ To access the Zoneminder gui, browse to: `https://<your host ip>:8443/zm`
 The zmNinja Event Notification Server is accessed at port `9000`.  Security with a self signed certificate is enabled.  You may have to install the certificate on iOS devices for the event notification to work properly.
 
 #### Change Log
+
+2019-09-19
+- Update zmes_hook_helpers.
 
 2019-09-16
 - Initial master release.

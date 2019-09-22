@@ -70,6 +70,9 @@ The zmNinja Event Notification Server is accessed at port `9000`.  Security with
 
 #### Change Log
 
+2019-09-22
+- Upgrade to php 7.3.
+
 2019-09-21
 - Fix /hook folder permission check.
 

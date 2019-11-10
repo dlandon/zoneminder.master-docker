@@ -73,6 +73,9 @@ The zmNinja Event Notification Server is accessed at port `9000`.  Security with
 
 #### Change Log
 
+2019-11-09
+- Update zmNinja Event Notification Server to version 4.5.
+
 2019-11-06
 - Add libavutil-dev for hwaccel support.
 

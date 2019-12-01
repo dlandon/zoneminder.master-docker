@@ -73,6 +73,9 @@ The zmNinja Event Notification Server is accessed at port `9000`.  Security with
 
 #### Change Log
 
+2019-12-01
+- Fix ES file references to newer versions of zm_detect_wrapper.sh amnd zm_detect.py
+
 2019-11-26
 - Remove set_php_time_zone script.  The time is now set in options.
 

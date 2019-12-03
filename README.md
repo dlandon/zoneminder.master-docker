@@ -73,6 +73,9 @@ The zmNinja Event Notification Server is accessed at port `9000`.  Security with
 
 #### Change Log
 
+2019-12-02
+- fix: Install python3-opencv for hook processing.
+
 2019-12-01
 - Fix ES file references to newer versions of zm_detect_wrapper.sh amnd zm_detect.py
 

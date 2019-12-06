@@ -259,7 +259,7 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 		chmod -R 777 /config/hook
 
 		# Python modules needed for hook processing
-		apt-get -y install python3-pip cmake python3-opencv
+		apt-get -y install python3-pip cmake
 
 		# pip3 will take care on installing dependent packages
 		pip3 install future

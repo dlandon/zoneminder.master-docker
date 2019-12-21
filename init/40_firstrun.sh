@@ -104,7 +104,7 @@ ln -sf /config/keys/cert.crt /etc/apache2/ssl/zoneminder.crt
 rm -rf /etc/apache2/ssl/zoneminder.key
 ln -sf /config/keys/cert.key /etc/apache2/ssl/zoneminder.key
 mkdir -p /var/lib/zmeventnotification/push
-ln -sf /config/push/ /var/lib/zmeventnotification/
+ln -sf /config/push/tokens.txt /var/lib/zmeventnotification/push/tokens.txt
 
 # ssmtp
 rm -r /etc/ssmtp 
@@ -243,6 +243,10 @@ fi
 ln -sf /config/zmeventnotification.ini /etc/zm/zmeventnotification.ini
 chown www-data:www-data /etc/zm/zmeventnotification.ini
 
+# Symbolink for /config/secrets.ini
+ln -sf /config/secrets.ini /etc/zm/
+
+
 # Fix memory issue
 echo "Setting shared memory to : $SHMEM of `awk '/MemTotal/ {print $2}' /proc/meminfo` bytes"
 umount /dev/shm
@@ -354,13 +358,12 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 
 	# Symbolic link for hook files in /config
 	mkdir -p /var/lib/zmeventnotification/bin
-	ln -sf /config/hook/zm_detect.py /var/lib/zmeventnotification/bin/zm_detect.py 2>/dev/null
-	ln -sf /config/hook/zm_train_faces.py /var/lib/zmeventnotification/bin/zm_train_faces.py 2>/dev/null
-	ln -sf /config/hook/zm_event_start.sh /var/lib/zmeventnotification/bin/zm_event_start.sh 2>/dev/null
-	ln -sf /config/hook/zm_event_end.sh /var/lib/zmeventnotification/bin/zm_event_end.sh 2>/dev/null
-	chmod +x /var/lib/zmeventnotification/bin/* 2>/dev/null
-	ln -sf /config/hook/objectconfig.ini /etc/zm/ 2>/dev/null
-	ln -sf /config/secrets.ini /etc/zm/ 2>/dev/null
+	ln -sf /config/hook/zm_detect.py /var/lib/zmeventnotification/bin/zm_detect.py
+	ln -sf /config/hook/zm_train_faces.py /var/lib/zmeventnotification/bin/zm_train_faces.py
+	ln -sf /config/hook/zm_event_start.sh /var/lib/zmeventnotification/bin/zm_event_start.sh
+	ln -sf /config/hook/zm_event_end.sh /var/lib/zmeventnotification/bin/zm_event_end.sh
+	chmod +x /var/lib/zmeventnotification/bin/*
+	ln -sf /config/hook/objectconfig.ini /etc/zm/
 
 	if [ "$INSTALL_FACE" == "1" ] && [ -f /root/zmeventnotification/setup.py ]; then
 		# Create known_faces folder if it doesn't exist

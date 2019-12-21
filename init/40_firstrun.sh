@@ -35,6 +35,7 @@ fi
 # Handle the secrets.ini file
 if [ -f /root/zmeventnotification/secrets.ini ]; then
 	echo "Moving secrets.ini"
+	cp /root/zmeventnotification/secrets.ini /config/secrets.ini.default
 	if [ ! -f /config/secrets.ini ]; then
 		mv /root/zmeventnotification/secrets.ini /config/secrets.ini
 	else
@@ -102,6 +103,8 @@ rm -rf /etc/apache2/ssl/zoneminder.crt
 ln -sf /config/keys/cert.crt /etc/apache2/ssl/zoneminder.crt
 rm -rf /etc/apache2/ssl/zoneminder.key
 ln -sf /config/keys/cert.key /etc/apache2/ssl/zoneminder.key
+mkdir -p /var/lib/zmeventnotification/push
+ln -sf /config/push/ /var/lib/zmeventnotification/
 
 # ssmtp
 rm -r /etc/ssmtp 
@@ -264,6 +267,8 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 		# pip3 will take care on installing dependent packages
 		pip3 install future
 		pip3 install /root/zmeventnotification
+		pip3 install opencv-python
+		pip3 install opencv-contrib-python
 	    rm -rf /root/zmeventnotification/zmes_hook_helpers
 	fi
 
@@ -305,22 +310,36 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 		echo "File objectconfig.ini already moved"
 	fi
 
-	# Handle the zm_detect_wrapper.sh file
-	if [ -f /root/zmeventnotification/zm_detect_wrapper.sh ]; then
-		echo "Moving zm_detect_wrapper.sh"
-		mv /root/zmeventnotification/zm_detect_wrapper.sh /config/hook/zm_detect_wrapper.sh
-		rm -f /config/hook/detect_wrapper.sh
+	# Handle the zm_event_start.sh file
+	if [ -f /root/zmeventnotification/zm_event_start.sh ]; then
+		echo "Moving zm_event_start.sh"
+		mv /root/zmeventnotification/zm_event_start.sh /config/hook/zm_event_start.sh
 	else
-		echo "File zm_detect_wrapper.sh already moved"
+		echo "File zm_event_start.sh already moved"
+	fi
+
+	# Handle the zm_event_end.sh file
+	if [ -f /root/zmeventnotification/zm_event_end.sh ]; then
+		echo "Moving zm_event_end.sh"
+		mv /root/zmeventnotification/zm_event_end.sh /config/hook/zm_event_end.sh
+	else
+		echo "File zm_event_end.sh already moved"
 	fi
 
 	# Handle the zm_detect.py file
 	if [ -f /root/zmeventnotification/zm_detect.py ]; then
 		echo "Moving zm_detect.py"
 		mv /root/zmeventnotification/zm_detect.py /config/hook/zm_detect.py
-		rm -f /config/hook/detect.py
 	else
 		echo "File zm_detect.py already moved"
+	fi
+
+	# Handle the zm_train_faces.py file
+	if [ -f /root/zmeventnotification/zm_train_faces.py ]; then
+		echo "Moving zm_train_faces.py"
+		mv /root/zmeventnotification/zm_train_faces.py /config/hook/zm_train_faces.py
+	else
+		echo "File zm_train_faces.py already moved"
 	fi
 
 	# Symbolic link for models in /config
@@ -334,9 +353,12 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 	chown -R www-data:www-data /var/lib/zmeventnotification/known_faces
 
 	# Symbolic link for hook files in /config
-	ln -sf /config/hook/zm_detect.py /usr/bin/zm_detect.py 2>/dev/null
-	ln -sf /config/hook/zm_detect_wrapper.sh /usr/bin/zm_detect_wrapper.sh 2>/dev/null
-	chmod +x /usr/bin/zm_detect* 2>/dev/null
+	mkdir -p /var/lib/zmeventnotification/bin
+	ln -sf /config/hook/zm_detect.py /var/lib/zmeventnotification/bin/zm_detect.py 2>/dev/null
+	ln -sf /config/hook/zm_train_faces.py /var/lib/zmeventnotification/bin/zm_train_faces.py 2>/dev/null
+	ln -sf /config/hook/zm_event_start.sh /var/lib/zmeventnotification/bin/zm_event_start.sh 2>/dev/null
+	ln -sf /config/hook/zm_event_end.sh /var/lib/zmeventnotification/bin/zm_event_end.sh 2>/dev/null
+	chmod +x /var/lib/zmeventnotification/bin/* 2>/dev/null
 	ln -sf /config/hook/objectconfig.ini /etc/zm/ 2>/dev/null
 	ln -sf /config/secrets.ini /etc/zm/ 2>/dev/null
 

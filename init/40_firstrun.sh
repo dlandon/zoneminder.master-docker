@@ -246,7 +246,6 @@ chown www-data:www-data /etc/zm/zmeventnotification.ini
 # Symbolink for /config/secrets.ini
 ln -sf /config/secrets.ini /etc/zm/
 
-
 # Fix memory issue
 echo "Setting shared memory to : $SHMEM of `awk '/MemTotal/ {print $2}' /proc/meminfo` bytes"
 umount /dev/shm

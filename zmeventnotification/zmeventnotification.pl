@@ -57,7 +57,7 @@ use IO::Select;
 #
 # ==========================================================================
 
-my $app_version = "5.2-Dcker";
+my $app_version = "5.3-Docker";
 
 # ==========================================================================
 #
@@ -74,6 +74,7 @@ my $app_version = "5.2-Dcker";
 use constant {
   DEFAULT_CONFIG_FILE       => "/etc/zm/zmeventnotification.ini",
   DEFAULT_PORT              => 9000,
+  DEFAULT_ADDRESS           => '[::]',
   DEFAULT_AUTH_ENABLE       => 'yes',
   DEFAULT_AUTH_TIMEOUT      => 20,
   DEFAULT_FCM_ENABLE        => 'yes',
@@ -94,9 +95,9 @@ use constant {
   DEFAULT_HOOK_STORE_FRAME_IN_ZM                  => 'no',
   DEFAULT_RESTART_INTERVAL                        => 7200,
   DEFAULT_EVENT_START_NOTIFY_ON_HOOK_FAIL         => 'none',
-  DEFAULT_EVENT_START_NOTIFY_ON_HOOK_SUCCESS      => 'none',
+  DEFAULT_EVENT_START_NOTIFY_ON_HOOK_SUCCESS      => 'all',
   DEFAULT_EVENT_END_NOTIFY_ON_HOOK_FAIL           => 'none',
-  DEFAULT_EVENT_END_NOTIFY_ON_HOOK_SUCCESS        => 'none',
+  DEFAULT_EVENT_END_NOTIFY_ON_HOOK_SUCCESS        => 'all',
   DEFAULT_EVENT_END_NOTIFY_IF_START_SUCCESS       => 'yes',
 };
 
@@ -130,6 +131,7 @@ my $config_file_present;
 my $check_config;
 
 my $port;
+my $address;
 
 my $auth_enabled;
 my $auth_timeout;
@@ -287,10 +289,11 @@ else {
 # If an option set a value, leave it.  If there's a value in the config, use
 # it.  Otherwise, use a default value if it's available.
 
-
-$base_data_path //= config_get_val( $config, "general", "base_data_path", DEFAULT_BASE_DATA_PATH ); 
+$base_data_path //= config_get_val( $config, "general", "base_data_path",
+  DEFAULT_BASE_DATA_PATH );
 
 $port    //= config_get_val( $config, "network", "port",    DEFAULT_PORT );
+$address //= config_get_val( $config, "network", "address", DEFAULT_ADDRESS );
 $auth_enabled //=
   config_get_val( $config, "auth", "enable", DEFAULT_AUTH_ENABLE );
 $auth_timeout //=
@@ -303,7 +306,7 @@ $mqtt_password //= config_get_val( $config, "mqtt", "password" );
 $use_fcm //= config_get_val( $config, "fcm", "enable", DEFAULT_FCM_ENABLE );
 $fcm_api_key //= config_get_val( $config, "fcm", "api_key", NINJA_API_KEY );
 
-$token_file //= 
+$token_file //=
   config_get_val( $config, "fcm", "token_file", DEFAULT_FCM_TOKEN_FILE );
 $ssl_enabled //= config_get_val( $config, "ssl", "enable", DEFAULT_SSL_ENABLE );
 $ssl_cert_file //= config_get_val( $config, "ssl", "cert" );
@@ -438,19 +441,19 @@ sub config_get_val {
   my @matches = ( $final_val =~ /\{\{(.*?)\}\}/g );
 
   foreach (@matches) {
-    
-    
+
     my $token = $_;
+
     # check if token exists in either general or its own section
     # other-section substitution not supported
-  
-    my $val = $config->val('general', $token);
-    $val = $config->val($sect, $token) if !$val;
-    printDebug ("config string substitution: {{$token}} is '$val'");
+
+    my $val = $config->val( 'general', $token );
+    $val = $config->val( $sect, $token ) if !$val;
+    printDebug("config string substitution: {{$token}} is '$val'");
     $final_val =~ s/\{\{$token\}\}/$val/g;
 
-  } 
- 
+  }
+
   return $final_val;
 }
 
@@ -484,6 +487,7 @@ Base data path.........................${\(value_or_undefined($base_data_path))}
 Restart interval (secs)............... ${\(value_or_undefined($restart_interval))}
 
 Port ................................. ${\(value_or_undefined($port))}
+Address .............................. ${\(value_or_undefined($address))}
 Event check interval ................. ${\(value_or_undefined($event_check_interval))}
 Monitor reload interval .............. ${\(value_or_undefined($monitor_reload_interval))}
 
@@ -1348,7 +1352,8 @@ sub processJobs {
       }
     }
     elsif ( $read_avail > 0 ) {
-     # printDebug("processJobs inside read_avail > 0");
+
+      # printDebug("processJobs inside read_avail > 0");
       chomp( my $txt = sysreadline(READER) );
       printDebug("RAW TEXT-->$txt");
       my ( $job, $msg ) = split( "--TYPE--", $txt );
@@ -2436,56 +2441,69 @@ sub processNewAlarmsInFork {
           #$active_events{$mid}{$eid}{'start'}->{State} = 'ready';
       }
       else {
-        # invoke hook start script
-        my $cmd =
-            $event_start_hook . " "
-          . $eid . " "
-          . $mid . " \""
-          . $alarm->{MonitorName} . "\"" . " \""
-          . $alarm->{Start}->{Cause} . "\"";
 
-        if ($hook_pass_image_path) {
-          my $event = new ZoneMinder::Event($eid);
-          $cmd = $cmd . " \"" . $event->Path() . "\"";
-          printDebug( "Adding event path:"
-              . $event->Path()
-              . " to hook for image storage" );
+        if ($event_start_hook) {
 
-        }
-        printInfo( "Invoking hook on event start:" . $cmd );
-        my $resTxt = `$cmd`;
-        $resCode    = $? >> 8;
-        $start_code = $resCode;
-        chomp($resTxt);
-        printInfo("hook start returned with text:$resTxt exit:$resCode");
-        $alarm->{Start}->{State} = 'ready';
+          # invoke hook start script
+          my $cmd =
+              $event_start_hook . " "
+            . $eid . " "
+            . $mid . " \""
+            . $alarm->{MonitorName} . "\"" . " \""
+            . $alarm->{Start}->{Cause} . "\"";
 
-        if ( $use_hook_description && $resCode == 0 ) {
+          if ($hook_pass_image_path) {
+            my $event = new ZoneMinder::Event($eid);
+            $cmd = $cmd . " \"" . $event->Path() . "\"";
+            printDebug( "Adding event path:"
+                . $event->Path()
+                . " to hook for image storage" );
+
+          }
+          printInfo( "Invoking hook on event start:" . $cmd );
+          my $resTxt = `$cmd`;
+          $resCode    = $? >> 8;
+          $start_code = $resCode;
+          chomp($resTxt);
+          printInfo("hook start returned with text:$resTxt exit:$resCode");
+
+          if ( $use_hook_description && $resCode == 0 ) {
 
      # lets append it to any existing motion notes
      # note that this is in the fork. We are only passing hook text
      # to parent, so it can be appended to the full motion text on event close``
-          $alarm->{Start}->{Cause} =
-            $resTxt . " " . $alarm->{Start}->{Cause};
-          print WRITER 'active_event_update--TYPE--'
-            . $mid
-            . '--SPLIT--'
-            . $eid
-            . '--SPLIT--' . 'Start'
-            . '--SPLIT--' . 'Cause'
-            . '--SPLIT--'
-            . $alarm->{Start}->{Cause} . "\n";
+            $alarm->{Start}->{Cause} =
+              $resTxt . " " . $alarm->{Start}->{Cause};
+            print WRITER 'active_event_update--TYPE--'
+              . $mid
+              . '--SPLIT--'
+              . $eid
+              . '--SPLIT--' . 'Start'
+              . '--SPLIT--' . 'Cause'
+              . '--SPLIT--'
+              . $alarm->{Start}->{Cause} . "\n";
 
   # This updates the ZM DB with the detected description
   # we are writing resTxt not alarm cause which is only detection text
   # when we write to DB, we will add the latest notes, which may have more zones
-          print WRITER "event_description--TYPE--"
-            . $mid
-            . "--SPLIT--"
-            . $eid
-            . "--SPLIT--"
-            . $resTxt . "\n";
-        }    # use_hook_desc
+            print WRITER "event_description--TYPE--"
+              . $mid
+              . "--SPLIT--"
+              . $eid
+              . "--SPLIT--"
+              . $resTxt . "\n";
+          }    # use_hook_desc
+
+        }
+        else {    # treat it as a success if no hook to be used
+          printInfo(
+            "hooks not being used, going to directly send out a notification if checks pass"
+          );
+          $resCode = 0;
+        }
+
+        $alarm->{Start}->{State} = 'ready';
+
       }    # hook start script
 
       # end of State == pending
@@ -2613,7 +2631,8 @@ sub processNewAlarmsInFork {
           Time  => time(),
           Cause => getNotesFromEventDB($eid)
         };
-        $resCode = 1 if ( !$event_end_hook &&  ($alarm->{Start}->{State} eq 'done') );
+        $resCode = 1
+          if ( !$event_end_hook && ( $alarm->{Start}->{State} eq 'done' ) );
 
         printDebug( "Event end object is: state=>"
             . $alarm->{End}->{State}
@@ -2641,6 +2660,7 @@ sub initSocketServer {
       $ssl_server = IO::Socket::SSL->new(
         Listen        => 10,
         LocalPort     => $port,
+        LocalAddr     => $address,
         Proto         => 'tcp',
         Reuse         => 1,
         ReuseAddr     => 1,

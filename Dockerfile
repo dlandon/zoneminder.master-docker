@@ -1,4 +1,4 @@
-FROM dlandon/baseimage
+FROM dlandon/zoneminder-baseimage
 
 LABEL maintainer="dlandon"
 
@@ -20,7 +20,7 @@ RUN	add-apt-repository -y ppa:iconnor/zoneminder-$ZM_VERS && \
 	apt-get -y upgrade -o Dpkg::Options::="--force-confold" && \
 	apt-get -y dist-upgrade -o Dpkg::Options::="--force-confold" && \
 	apt-get -y install apache2 mariadb-server && \
-	apt-get -y install ssmtp mailutils net-tools libav-tools wget sudo make && \
+	apt-get -y install ssmtp mailutils net-tools wget sudo make && \
 	apt-get -y install php$PHP_VERS php$PHP_VERS-fpm libapache2-mod-php$PHP_VERS php$PHP_VERS-mysql php$PHP_VERS-gd && \
 	apt-get -y install libcrypt-mysql-perl libyaml-perl libjson-perl libavutil-dev && \
 	apt-get -y install --no-install-recommends libvlc-dev libvlccore-dev vlc

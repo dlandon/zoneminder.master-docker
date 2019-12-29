@@ -73,6 +73,9 @@ The zmNinja Event Notification Server is accessed at port `9000`.  Security with
 
 #### Change Log
 
+2019-12-28
+- Upgrade to Phusion 11.0 (Ubuntu 18.04).
+
 2019-12-22
 - Upgrade to php 7.4.
 - Update zmNinja Event Notification Server to version 5.4.

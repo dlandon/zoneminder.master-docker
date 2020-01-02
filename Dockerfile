@@ -2,11 +2,10 @@ FROM dlandon/zoneminder-baseimage
 
 LABEL maintainer="dlandon"
 
-ENV	PHP_VERS="7.4"
-ENV	ZM_VERS="master"
-ENV	ZMEVENT_VERS="5.4"
-
-ENV	SHMEM="50%" \
+ENV	PHP_VERS="7.4" \
+	ZM_VERS="master" \
+	ZMEVENT_VERS="5.4" \
+	SHMEM="50%" \
 	PUID="99" \
 	PGID="100"
 

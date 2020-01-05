@@ -1,6 +1,16 @@
-FROM dlandon/zoneminder-baseimage
+FROM phusion/baseimage:0.11
 
 LABEL maintainer="dlandon"
+
+ENV	DEBCONF_NONINTERACTIVE_SEEN="true" \
+	DEBIAN_FRONTEND="noninteractive" \
+	DISABLE_SSH="true" \
+	HOME="/root" \
+	LC_ALL="C.UTF-8" \
+	LANG="en_US.UTF-8" \
+	LANGUAGE="en_US.UTF-8" \
+	TZ="Etc/UTC" \
+	TERM="xterm"
 
 ENV	PHP_VERS="7.4" \
 	ZM_VERS="master" \
@@ -72,10 +82,13 @@ RUN	systemd-tmpfiles --create zoneminder.conf && \
 RUN	apt-get -y remove make && \
 	apt-get -y clean && \
 	apt-get -y autoremove && \
-	rm -rf /tmp/* /var/tmp/*
+	rm -rf /tmp/* /var/tmp/* && \
+	chmod +x /etc/my_init.d/*.sh
 
 VOLUME \
 	["/config"] \
 	["/var/cache/zoneminder"]
 
 EXPOSE 80 443 9000
+
+CMD ["/sbin/my_init"]

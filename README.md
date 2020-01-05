@@ -73,6 +73,9 @@ The zmNinja Event Notification Server is accessed at port `9000`.  Security with
 
 #### Change Log
 
+2020-01-05
+- Disable all apache protocols except for TLSv1.2.  Other protocols are obsolete.
+
 2019-12-28
 - Upgrade to Phusion 11.0 (Ubuntu 18.04).
 

@@ -12,10 +12,10 @@ This verson will now upgrade from previous versions.
 Install the docker by going to a command line and enter the command:
 
 ```bash
-docker pull dlandon/zoneminder
+docker pull dlandon/zoneminder.master
 ```
 
-This will pull the zoneminder docker image.  Once it is installed you are ready to run the docker.
+This will pull the zoneminder master docker image. Note that ZoneMinder master should always be treated as a development release. If you want to run the latest stable release, please use [this](https://github.com/dlandon/zoneminder) repo. Once it is installed you are ready to run the docker.
 
 Before you run the image, feel free to read configuration section below to customize various settings
 

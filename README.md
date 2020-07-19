@@ -73,6 +73,9 @@ The zmNinja Event Notification Server is accessed at port `9000`.  Security with
 
 #### Change Log
 
+2020-07-19
+- Update zmNinja Event Notification Server to version 5.15.
+
 2020-01-05
 - Disable all apache protocols except for TLSv1.2.  Other protocols are obsolete.
 

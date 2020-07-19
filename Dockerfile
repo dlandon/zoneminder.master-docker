@@ -14,14 +14,12 @@ ENV	DEBCONF_NONINTERACTIVE_SEEN="true" \
 
 ENV	PHP_VERS="7.4" \
 	ZM_VERS="master" \
-	ZMEVENT_VERS="5.4" \
 	SHMEM="50%" \
 	PUID="99" \
 	PGID="100"
 
 COPY init/ /etc/my_init.d/
 COPY defaults/ /root/
-COPY zmeventnotification /root/zmeventnotification/
 
 RUN	add-apt-repository -y ppa:iconnor/zoneminder-$ZM_VERS && \
 	add-apt-repository ppa:ondrej/php && \
@@ -77,7 +75,9 @@ RUN	systemd-tmpfiles --create zoneminder.conf && \
 	chmod -R +x /etc/my_init.d/ && \
 	cp -p /etc/zm/zm.conf /root/zm.conf && \
 	echo "#!/bin/sh\n\n/usr/bin/zmaudit.pl -f" >> /etc/cron.weekly/zmaudit && \
-	chmod +x /etc/cron.weekly/zmaudit
+	chmod +x /etc/cron.weekly/zmaudit && \
+	cp /etc/apache2/ports.conf /etc/apache2/ports.conf.default && \
+	cp /etc/apache2/sites-enabled/default-ssl.conf /etc/apache2/sites-enabled/default-ssl.conf.default
 
 RUN	apt-get -y remove make && \
 	apt-get -y clean && \

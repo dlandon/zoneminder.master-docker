@@ -7,6 +7,7 @@ services:
         ports:
             - 8443:443/tcp
             - 9000:9000/tcp
+        runtime: nvidia
         network_mode: "bridge"
         privileged: true
         environment:
@@ -23,6 +24,8 @@ services:
         volumes:
             - config:/config:rw
             - data:/var/cache/zoneminder:rw
+            - cuda:/usr/local/cuda:/usr/local/cuda
 volumes:
     config:
     data:
+    cuda:

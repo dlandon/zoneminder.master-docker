@@ -19,6 +19,17 @@ else
 	echo "File zm.conf already moved"
 fi
 
+# Get the latest ES bundle
+cd /root
+rm -rf zmeventnotification
+wget -q https://github.com/dlandon/zoneminder.master/raw/master/zmeventnotification/EventServer.tgz
+if [ -f EventServer.tgz ]; then
+	tar -xf EventServer.tgz
+	rm EventServer.tgz
+else
+	echo "Error: Cannot download the ES server bundle"
+fi
+
 # Handle the zmeventnotification.ini file
 if [ -f /root/zmeventnotification/zmeventnotification.ini ]; then
 	echo "Moving zmeventnotification.ini"
@@ -45,13 +56,59 @@ else
 	echo "File secrets.ini already moved"
 fi
 
-# Handle the zmeventnotification.pl & daemon files
+# Create opencv folder if it doesn't exist
+if [ ! -d /config/opencv ]; then
+	echo "Creating opencv folder in config folder"
+	mkdir /config/opencv
+fi
+
+# Handle the opencv.sh file
+if [ -f /root/zmeventnotification/opencv.sh ]; then
+	echo "Moving opencv.sh"
+	cp /root/zmeventnotification/opencv.sh /config/opencv/opencv.sh.default
+	if [ ! -f /config/opencv/opencv.sh ]; then
+		mv /root/zmeventnotification/opencv.sh /config/opencv/opencv.sh
+	else
+		rm -rf /root/zmeventnotification/opencv.sh
+	fi
+else
+	echo "File opencv.sh already moved"
+fi
+
+# Handle the debug_opencv.sh file
+if [ -f /root/zmeventnotification/debug_opencv.sh ]; then
+	echo "Moving debug_opencv.sh"
+	mv /root/zmeventnotification/debug_opencv.sh /config/opencv/debug_opencv.sh
+else
+	echo "File debug_opencv.sh already moved"
+fi
+
+if [ ! -f /config/opencv/opencv_ok ]; then
+	echo "no" > /config/opencv/opencv_ok
+fi
+
+# Handle the zmeventnotification.pl
 if [ -f /root/zmeventnotification/zmeventnotification.pl ]; then
 	echo "Moving the event notification server"
 	mv /root/zmeventnotification/zmeventnotification.pl /usr/bin
 	chmod +x /usr/bin/zmeventnotification.pl 2>/dev/null
 else
 	echo "Event notification server already moved"
+fi
+
+# Handle the pushapi_pushover.py
+if [ -f /root/zmeventnotification/pushapi_pushover.py ]; then
+	echo "Moving the pushover api"
+	mkdir -p /var/lib/zmeventnotification/bin/
+	mv /root/zmeventnotification/pushapi_pushover.py /var/lib/zmeventnotification/bin/
+	chmod +x /var/lib/zmeventnotification/bin/pushapi_pushover.py 2>/dev/null
+else
+	echo "Pushover api already moved"
+fi
+
+# Show version of ES
+if [ -f /usr/bin/zmeventnotification.pl ]; then
+	echo "Event Server version: `cat /usr/bin/zmeventnotification.pl | grep Docker | awk '{print $4}' | sed 's/;//'`."
 fi
 
 # Move ssmtp configuration if it doesn't exist
@@ -130,33 +187,42 @@ usermod -a -G mail www-data
 chown -R mysql:mysql /config/mysql
 chown -R mysql:mysql /var/lib/mysql
 chown -R $PUID:$PGID /config/conf
-chmod -R 666 /config/conf
+chmod 777 /config/conf
+chmod 666 /config/conf/*
 chown -R $PUID:$PGID /config/control
-chmod -R 666 /config/control
+chmod 777 /config/control
+chmod 666 -R /config/control/
 chown -R $PUID:$PGID /config/ssmtp
 chmod -R 777 /config/ssmtp
 chown -R $PUID:$PGID /config/zmeventnotification.*
-chmod -R 666 /config/zmeventnotification.*
+chmod 666 /config/zmeventnotification.*
 chown -R $PUID:$PGID /config/secrets.ini
-chmod -R 666 /config/secrets.ini
+chmod 666 /config/secrets.ini
+chown -R $PUID:$PGID /config/opencv
+chmod 777 /config/opencv
+chmod 666 /config/opencv/*
 chown -R $PUID:$PGID /config/keys
-chmod -R 777 /config/keys
+chmod 777 /config/keys
+chmod 666 /config/keys/*
 chown -R www-data:www-data /config/push/
 chown -R www-data:www-data /var/lib/zmeventnotification/
+chmod +x /config/opencv/opencv.sh
+chmod +x /config/opencv/debug_opencv.sh
+chmod +x /config/opencv/opencv.sh.default
 
 # Create events folder
 if [ ! -d /var/cache/zoneminder/events ]; then
 	echo "Create events folder"
 	mkdir /var/cache/zoneminder/events
-	chown -R root:www-data /var/cache/zoneminder/events
+	chown -R www-data:www-data /var/cache/zoneminder/events
 	chmod -R 777 /var/cache/zoneminder/events
 else
 	echo "Using existing data directory for events"
 
 	# Check the ownership on the /var/cache/zoneminder/events directory
-	if [ `stat -c '%U:%G' /var/cache/zoneminder/events` != 'root:www-data' ]; then
+	if [ `stat -c '%U:%G' /var/cache/zoneminder/events` != 'www-data:www-data' ]; then
 		echo "Correcting /var/cache/zoneminder/events ownership..."
-		chown -R root:www-data /var/cache/zoneminder/events
+		chown -R www-data:www-data /var/cache/zoneminder/events
 	fi
 
 	# Check the permissions on the /var/cache/zoneminder/events directory
@@ -170,15 +236,15 @@ fi
 if [ ! -d /var/cache/zoneminder/images ]; then
 	echo "Create images folder"
 	mkdir /var/cache/zoneminder/images
-	chown -R root:www-data /var/cache/zoneminder/images
+	chown -R www-data:www-data /var/cache/zoneminder/images
 	chmod -R 777 /var/cache/zoneminder/images
 else
 	echo "Using existing data directory for images"
 
 	# Check the ownership on the /var/cache/zoneminder/images directory
-	if [ `stat -c '%U:%G' /var/cache/zoneminder/images` != 'root:www-data' ]; then
+	if [ `stat -c '%U:%G' /var/cache/zoneminder/images` != 'www-data:www-data' ]; then
 		echo "Correcting /var/cache/zoneminder/images ownership..."
-		chown -R root:www-data /var/cache/zoneminder/images
+		chown -R www-data:www-data /var/cache/zoneminder/images
 	fi
 
 	# Check the permissions on the /var/cache/zoneminder/images directory
@@ -192,15 +258,15 @@ fi
 if [ ! -d /var/cache/zoneminder/temp ]; then
 	echo "Create temp folder"
 	mkdir /var/cache/zoneminder/temp
-	chown -R root:www-data /var/cache/zoneminder/temp
+	chown -R www-data:www-data /var/cache/zoneminder/temp
 	chmod -R 777 /var/cache/zoneminder/temp
 else
 	echo "Using existing data directory for temp"
 
 	# Check the ownership on the /var/cache/zoneminder/temp directory
-	if [ `stat -c '%U:%G' /var/cache/zoneminder/temp` != 'root:www-data' ]; then
+	if [ `stat -c '%U:%G' /var/cache/zoneminder/temp` != 'www-data:www-data' ]; then
 		echo "Correcting /var/cache/zoneminder/temp ownership..."
-		chown -R root:www-data /var/cache/zoneminder/temp
+		chown -R www-data:www-data /var/cache/zoneminder/temp
 	fi
 
 	# Check the permissions on the /var/cache/zoneminder/temp directory
@@ -214,15 +280,15 @@ fi
 if [ ! -d /var/cache/zoneminder/cache ]; then
 	echo "Create cache folder"
 	mkdir /var/cache/zoneminder/cache
-	chown -R root:www-data /var/cache/zoneminder/cache
+	chown -R www-data:www-data /var/cache/zoneminder/cache
 	chmod -R 777 /var/cache/zoneminder/cache
 else
 	echo "Using existing data directory for cache"
 
 	# Check the ownership on the /var/cache/zoneminder/cache directory
-	if [ `stat -c '%U:%G' /var/cache/zoneminder/cache` != 'root:www-data' ]; then
+	if [ `stat -c '%U:%G' /var/cache/zoneminder/cache` != 'www-data:www-data' ]; then
 		echo "Correcting /var/cache/zoneminder/cache ownership..."
-		chown -R root:www-data /var/cache/zoneminder/cache
+		chown -R www-data:www-data /var/cache/zoneminder/cache
 	fi
 
 	# Check the permissions on the /var/cache/zoneminder/cache directory
@@ -250,11 +316,37 @@ echo "Setting shared memory to : $SHMEM of `awk '/MemTotal/ {print $2}' /proc/me
 umount /dev/shm
 mount -t tmpfs -o rw,nosuid,nodev,noexec,relatime,size=${SHMEM} tmpfs /dev/shm
 
+# Set multi-ports in apache2 for ES.
+# Start with default configuration.
+cp /etc/apache2/ports.conf.default /etc/apache2/ports.conf
+cp /etc/apache2/sites-enabled/default-ssl.conf.default /etc/apache2/sites-enabled/default-ssl.conf
+
+if [ $((MULTI_PORT_START)) -gt 0 ] && [ $((MULTI_PORT_END)) -gt $((MULTI_PORT_START)) ]; then
+
+	echo "Setting ES multi-port range from ${MULTI_PORT_START} to ${MULTI_PORT_END}."
+
+	ORIG_VHOST="_default_:443"
+
+	NEW_VHOST=${ORIG_VHOST}
+	PORT=${MULTI_PORT_START}
+	while [[ ${PORT} -le ${MULTI_PORT_END} ]]; do
+	    egrep -sq "Listen ${PORT}" /etc/apache2/ports.conf || echo "Listen ${PORT}" >> /etc/apache2/ports.conf
+	    NEW_VHOST="${NEW_VHOST} _default_:${PORT}"
+	    PORT=$(($PORT + 1))
+	done
+
+	perl -pi -e "s/${ORIG_VHOST}/${NEW_VHOST}/ if (/<VirtualHost/);" /etc/apache2/sites-enabled/default-ssl.conf
+else
+	if [ $((MULTI_PORT_START)) -ne 0 ];then
+		echo "Multi-port error start ${MULTI_PORT_START}, end ${MULTI_PORT_END}."
+	fi
+fi
+
 # Install hook packages, if enabled
 if [ "$INSTALL_HOOK" == "1" ]; then
 	echo "Installing machine learning modules & hooks..."
 
-	if [ -f /root/zmeventnotification/setup.py ]; then
+	if [ ! -f /root/setup.py ]; then
 		# If hook folder exists, copy files into image
 		if [ ! -d /config/hook ]; then
 			echo "Creating hook folder in config folder"
@@ -266,13 +358,15 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 		# Python modules needed for hook processing
 		apt-get -y install python3-pip cmake
 
-		# pip3 will take care on installing dependent packages
+		# pip3 will take care of installing dependent packages
 		pip3 install future
 		pip3 install /root/zmeventnotification
-		pip3 install opencv-python
 		pip3 install opencv-contrib-python
-	    rm -rf /root/zmeventnotification/zmes_hook_helpers
+	else
+		pip3 uninstall -y zmes-hooks
+		pip3 install /root/zmeventnotification
 	fi
+    rm -rf /root/zmeventnotification/zmes_hook_helpers
 
 	# Download models files
 	if [ "$INSTALL_TINY_YOLO" == "1" ]; then
@@ -354,6 +448,11 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 	ln -sf /config/hook/known_faces /var/lib/zmeventnotification/known_faces
 	chown -R www-data:www-data /var/lib/zmeventnotification/known_faces
 
+	# Symbolic link for unknown_faces in /config
+	rm -rf /var/lib/zmeventnotification/unknown_faces
+	ln -sf /config/hook/unknown_faces /var/lib/zmeventnotification/unknown_faces
+	chown -R www-data:www-data /var/lib/zmeventnotification/unknown_faces
+
 	# Symbolic link for hook files in /config
 	mkdir -p /var/lib/zmeventnotification/bin
 	ln -sf /config/hook/zm_detect.py /var/lib/zmeventnotification/bin/zm_detect.py
@@ -375,9 +474,18 @@ if [ "$INSTALL_HOOK" == "1" ]; then
  		pip3 install face_recognition
 	fi
 
-	rm -rf /root/zmeventnotification/setup.py
-
 	echo "Hook installation completed"
+
+	# compile opencv
+	if [ ! -f /root/setup.py ]; then
+		if [ `cat /config/opencv/opencv_ok` = 'yes' ]; then
+			if [ -x /config/opencv/opencv.sh ]; then
+				/config/opencv/opencv.sh quiet >/dev/null &
+			fi
+		fi
+	fi
+
+	mv /root/zmeventnotification/setup.py /root/setup.py
 fi
 
 echo "Starting services..."

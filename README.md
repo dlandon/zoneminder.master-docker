@@ -1,5 +1,5 @@
 ## Zoneminder Docker
-(Current version: 1.33 (master))
+(Current version: 1.35 (master))
 
 ### About
 This is an easy to run dockerized image of [ZoneMinder](https://github.com/ZoneMinder/zoneminder) along with the the [ZM Event Notification Server](https://github.com/pliablepixels/zmeventnotification) and its machine learning subsystem (which is disabled by default but can be enabled by a simple configuration).  
@@ -75,6 +75,7 @@ The zmNinja Event Notification Server is accessed at port `9000`.  Security with
 
 2020-07-19
 - Update zmNinja Event Notification Server to version 5.15.
+- Update to 1.35 master.
 
 2020-01-05
 - Disable all apache protocols except for TLSv1.2.  Other protocols are obsolete.

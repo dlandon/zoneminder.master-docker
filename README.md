@@ -37,7 +37,7 @@ docker run -d --name="Zoneminder" \
 -e INSTALL_YOLO="0" \
 -v "/mnt/Zoneminder":"/config":rw \
 -v "/mnt/Zoneminder/data":"/var/cache/zoneminder":rw \
-dlandon/zoneminder
+dlandon/zoneminder.master
 ```
 
 For http:// access use: -p 8080:80/tcp

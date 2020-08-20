@@ -1,5 +1,9 @@
 #### Change Log
 
+### 2020-08-20
+- Fix typo in first run.
+- Update opencv script for verson 4.3.0.
+
 ### 2020-08-12
 - Fix ES Yolo model download destination file names.
 - Create unknown_faces folder.

@@ -22,7 +22,7 @@ fi
 # Get the latest ES bundle
 cd /root
 rm -rf zmeventnotification
-wget -q https://github.com/dlandon/zoneminder/raw/master/zmeventnotification/EventServer.tgz
+wget -q https://github.com/dlandon/zoneminder.master-docker/raw/master/zmeventnotification/EventServer.tgz
 if [ -f EventServer.tgz ]; then
 	tar -xf EventServer.tgz
 	rm EventServer.tgz

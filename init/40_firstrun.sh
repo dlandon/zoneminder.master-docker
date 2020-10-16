@@ -96,21 +96,6 @@ else
 	echo "Event notification server already moved"
 fi
 
-# Handle the pushapi_pushover.py
-if [ -f /root/zmeventnotification/pushapi_pushover.py ]; then
-	echo "Moving the pushover api"
-	mkdir -p /var/lib/zmeventnotification/bin/
-	mv /root/zmeventnotification/pushapi_pushover.py /var/lib/zmeventnotification/bin/
-	chmod +x /var/lib/zmeventnotification/bin/pushapi_pushover.py 2>/dev/null
-else
-	echo "Pushover api already moved"
-fi
-
-# Show version of ES
-if [ -f /usr/bin/zmeventnotification.pl ]; then
-	echo "Event Server version: `cat /usr/bin/zmeventnotification.pl | grep Docker | awk '{print $4}' | sed 's/;//'`."
-fi
-
 # Move ssmtp configuration if it doesn't exist
 if [ ! -d /config/ssmtp ]; then
 	echo "Moving ssmtp to config folder"
@@ -427,6 +412,18 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 		fi
 	else
 		echo "File objectconfig.ini already moved"
+	fi
+
+	# Handle the config_upgrade.py
+	if [ -f /root/zmeventnotification/config_upgrade.py ]; then
+		echo "Executing the config_upgrade.py script"
+		chmod +x /root/zmeventnotification/config_upgrade.py 2>/dev/null
+		/root/zmeventnotification/config_upgrade.py -c /config/hook/objectconfig.ini
+		if [ -f migrated-objectconfig.ini ]; then
+			mv migrated-objectconfig.ini /config/hook/objectconfig.ini
+		fi
+	else
+		echo "config_upgrade.py script not found"
 	fi
 
 	# Handle the zm_event_start.sh file

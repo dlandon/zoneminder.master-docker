@@ -1,5 +1,9 @@
 #### Change Log
 
+### 2020-10-16
+- Update zmNinja Event Notification Server to version 6.0.2.
+
+
 ### 2020-08-20
 - Fix typo in first run.
 - Update opencv script for verson 4.3.0.

@@ -43,7 +43,7 @@ use Symbol qw(qualify_to_ref);
 use IO::Select;
 
 ####################################
-my $app_version = '6.0.2';
+my $app_version = '6.0.4';
 ####################################
 
 # do this before any log init etc.
@@ -466,7 +466,7 @@ sub config_get_val {
 
   }
 
-  return $final_val;
+  return trim($final_val);
 }
 
 # Loads all the ini file settings and populates variables
@@ -926,6 +926,9 @@ loadPredefinedConnections();
 initSocketServer();
 printInfo("Event Notification daemon exiting\n");
 exit();
+
+# left and right trim
+sub  trim { my $s = shift; $s =~ s/^\s+|\s+$//g; return $s };
 
 # Try to load a perl module
 # and if it is not available
@@ -1870,6 +1873,13 @@ sub sendOverFCMV1 {
       icon     => 'ic_stat_notification',
       priority => 'high'
     };
+
+    if (defined ($obj->{appversion}) && ($obj->{appversion} ne "unknown")) {
+    printDebug ('setting channel to zmninja',2);
+    $message_v2->{android}->{channel} = 'zmninja';
+    } else {
+          printDebug ('legacy client, NOT setting channel to zmninja',2);
+    }
   }
   if ( $obj->{platform} eq 'ios' ) {
     $message_v2->{ios} = {
@@ -1889,13 +1899,7 @@ sub sendOverFCMV1 {
 
   }
 
-  if (defined ($obj->{appversion}) && ($obj->{appversion} ne "unknown")) {
-    printDebug ('setting channel to zmninja',2);
-    $message_v2->{android}->{channel} = 'zmninja';
 
-  } else {
-        printDebug ('legacy client, NOT setting channel to zmninja',2);
-  }
   if ( $picture_url && $include_picture ) {
 
     # $ios_message->{mutable_content} = \1;

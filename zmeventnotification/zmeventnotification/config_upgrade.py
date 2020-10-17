@@ -4,11 +4,31 @@ from configparser import ConfigParser
 import sys
 import argparse
 import os
-
+import re
 '''
 wej qaStaHvIS wa' ghu'maj. wa'maHlu'chugh, vaj pagh. 
 chotlhej'a' qaDanganpu'. chenmoH tlhInganpu'.
 '''
+
+
+def sanity_check(s, c, v):
+
+    for attr in s:
+        print (f'Doing a sanity check, {attr} should not be there...')
+        #if attr in c:
+        if re.search(f'(^| |\t|\n){attr}(=| |\t)',c):
+            print  (
+            '''
+There is an error in your config. While upgrading to version:{} 
+I found a key ({}) that should not have been there. 
+This usually means when you last upgraded, your version attribute
+was not upgraded for some reason. To be safe, this script will not
+upgrade the script till you fix the potential issues
+            '''.format(v,attr))
+            exit(1)        
+
+    print ('Sanity check passed!')
+    return True
 
 def replace_attributes (orig, replacements):
     new_string = ''
@@ -48,12 +68,34 @@ fast_gif=no
 '''
 
     }
-    s1=replace_attributes(str_conf,replacements)
-    return (create_attributes(s1, new_additions))    
+    should_not_be_there = {
+        'fast_gif'
+    }
+
+    if sanity_check(should_not_be_there, str_conf, new_version):
+        s1=replace_attributes(str_conf,replacements)
+        return (create_attributes(s1, new_additions))    
+        
 
 
 
 def f_unknown_to_1_0(str_conf, new_version):
+
+    should_not_be_there = {
+        'cpu_max_processes',
+        'tpu_max_processes',
+        'gpu_max_processes',
+        'cpu_max_lock_wait',
+        'tpu_max_lock_wait',
+        'gpu_max_lock_wait',
+        'object_framework',
+        'object_processor',
+        'face_detection_framework',
+        'face_recognition_framework'
+
+
+    }
+
     replacements = {
     'models':'detection_sequence',
     '[yolo]': '[object]',
@@ -130,8 +172,10 @@ face_recognition_framework=dlib
 ''',
 
     }
-    s1=replace_attributes(str_conf,replacements)
-    return (create_attributes(s1, new_additions))    
+
+    if sanity_check(should_not_be_there, str_conf, new_version):
+        s1=replace_attributes(str_conf,replacements)
+        return (create_attributes(s1, new_additions))    
 
 # MAIN
 
@@ -164,7 +208,7 @@ version = 'unknown'
 if config_file.has_option('general', 'version'):
     version = config_file.get('general', 'version')
 
-print (f'Current version of objectconfig.ini is {version}')
+print (f'Current version of file is {version}')
 f=open(args.get('config'))
 str_conf = f.read()
 f.close()
@@ -177,7 +221,8 @@ else:
 
 if i >=0:
     for u in upgrade_path[i:]:
-        print ('Migrating from {} to {}'.format(u['from_version'],u['to_version']))
+        print ('-------------------------------------------------')
+        print ('Migrating from {} to {}\n'.format(u['from_version'],u['to_version']))
         str_conf = u['migrate'](str_conf, u['to_version'])
      
     
@@ -187,11 +232,11 @@ if i >=0:
     f.close()
     print ('''
 
-    ----------------------| NOTE |-------------------------
-    The migration is best effort. May contain errors.
-    Please review the modified file.
-    Items commented out with #REMOVE can be deleted.
-    Items marked with #NEW are new options to customize.
+----------------------| NOTE |-------------------------
+The migration is best effort. May contain errors.
+Please review the modified file.
+Items commented out with #REMOVE can be deleted.
+Items marked with #NEW are new options to customize.
 
     ''')
 

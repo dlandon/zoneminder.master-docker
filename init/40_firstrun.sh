@@ -337,8 +337,6 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 			echo "Creating hook folder in config folder"
 			mkdir /config/hook
 		fi
-		chown -R $PUID:$PGID /config/hook
-		chmod -R 777 /config/hook
 
 		# Python modules needed for hook processing
 		apt-get -y install python3-pip cmake
@@ -414,14 +412,12 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 		echo "File objectconfig.ini already moved"
 	fi
 
-	# Handle the config_upgrade.py
+	# Handle the config_upgrade script
 	if [ -f /root/zmeventnotification/config_upgrade.py ]; then
-		echo "Executing the config_upgrade.py script"
-		chmod +x /root/zmeventnotification/config_upgrade.py 2>/dev/null
-		/root/zmeventnotification/config_upgrade.py -c /config/hook/objectconfig.ini
-		if [ -f migrated-objectconfig.ini ]; then
-			mv migrated-objectconfig.ini /config/hook/objectconfig.ini
-		fi
+		echo "Moving config_upgrade.py"
+		mv /root/zmeventnotification/config_upgrade.py /config/hook/config_upgrade.py
+		mv /root/zmeventnotification/config_upgrade.sh /config/hook/config_upgrade.sh
+		chmod +x /config/hook/config_upgrade.*
 	else
 		echo "config_upgrade.py script not found"
 	fi
@@ -499,6 +495,10 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 		apt-get -y install libopenblas-dev liblapack-dev libblas-dev
  		pip3 install face_recognition
 	fi
+
+	# Set hook folder permissions
+	chown -R $PUID:$PGID /config/hook
+	chmod -R 777 /config/hook
 
 	echo "Hook installation completed"
 

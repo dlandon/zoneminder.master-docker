@@ -96,6 +96,16 @@ else
 	echo "Event notification server already moved"
 fi
 
+# Handle the pushapi_pushover.py
+if [ -f /root/zmeventnotification/pushapi_pushover.py ]; then
+	echo "Moving the pushover api"
+	mkdir -p /var/lib/zmeventnotification/bin/
+	mv /root/zmeventnotification/pushapi_pushover.py /var/lib/zmeventnotification/bin/
+	chmod +x /var/lib/zmeventnotification/bin/pushapi_pushover.py 2>/dev/null
+else
+	echo "Pushover api already moved"
+fi
+
 # Move ssmtp configuration if it doesn't exist
 if [ ! -d /config/ssmtp ]; then
 	echo "Moving ssmtp to config folder"
@@ -469,6 +479,28 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 	ln -sf /config/hook/unknown_faces /var/lib/zmeventnotification/unknown_faces
 	chown -R www-data:www-data /var/lib/zmeventnotification/unknown_faces
 
+	# Symbolic link for misc in /config
+	rm -rf /var/lib/zmeventnotification/misc
+	ln -sf /config/hook/misc /var/lib/zmeventnotification/misc
+	chown -R www-data:www-data /var/lib/zmeventnotification/misc
+
+	# Create misc folder if it doesn't exist
+	if [ ! -d /config/hook/misc ]; then
+		echo "Creating hook/misc folder in config folder"
+		mkdir -p /config/hook/misc
+	fi
+
+	# Symbolic link for coral_edgetpu in /config
+	rm -rf /var/lib/zmeventnotification/coral_edgetpu
+	ln -sf /config/hook/coral_edgetpu /var/lib/zmeventnotification/coral_edgetpu
+	chown -R www-data:www-data /var/lib/zmeventnotification/coral_edgetpu
+
+	# Create coral_edgetpu folder if it doesn't exist
+	if [ ! -d /config/hook/coral_edgetpu ]; then
+		echo "Creating hook/coral_edgetpu folder in config folder"
+		mkdir -p /config/hook/coral_edgetpu
+	fi
+
 	# Symbolic link for hook files in /config
 	mkdir -p /var/lib/zmeventnotification/bin
 	ln -sf /config/hook/zm_detect.py /var/lib/zmeventnotification/bin/zm_detect.py
@@ -479,6 +511,12 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 	ln -sf /config/hook/objectconfig.ini /etc/zm/
 
 	if [ "$INSTALL_FACE" == "1" ] && [ -f /root/zmeventnotification/setup.py ]; then
+		# Create known_faces folder if it doesn't exist
+		if [ ! -d /config/hook/known_faces ]; then
+			echo "Creating hook/known_faces folder in config folder"
+			mkdir -p /config/hook/known_faces
+		fi
+
 		# Create known_faces folder if it doesn't exist
 		if [ ! -d /config/hook/known_faces ]; then
 			echo "Creating hook/known_faces folder in config folder"

@@ -1,11 +1,14 @@
 #### Change Log
 
+### 2020-10-22
+- Update zmNinja Event Notification Server to version 6.0.5.
+
 ### 2020-10-16
 - Update zmNinja Event Notification Server to version 6.0.2.
 
 ### 2020-08-20
 - Fix typo in first run.
-- Update opencv script for verson 4.3.0.
+- Update opencv script for verson 4.3.0 of opencv.
 
 ### 2020-08-12
 - Fix ES Yolo model download destination file names.

@@ -1,8 +1,9 @@
 #### Change Log
 
-### 2020-10-23
+### 2020-10-24
 - Update zmNinja Event Notification Server to version 6.0.5.
 - Update opencv to 4.3.
+- Improve opencv compile time.
 
 ### 2020-10-16
 - Update zmNinja Event Notification Server to version 6.0.2.

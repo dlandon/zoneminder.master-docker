@@ -109,6 +109,13 @@ else
 	echo "Pushover api already moved"
 fi
 
+# Handle the es_rules.json
+if [ -f /config/es_rules.json ]; then
+	echo "Linking es_rules.json"
+	rm -rf /etc/zm/es_rules.json
+	ln -sf /config/es_rules.json /etc/zm/es_rules.json
+fi
+
 # Move ssmtp configuration if it doesn't exist
 if [ ! -d /config/ssmtp ]; then
 	echo "Moving ssmtp to config folder"

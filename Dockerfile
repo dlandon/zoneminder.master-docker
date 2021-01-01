@@ -1,4 +1,4 @@
-FROM phusion/baseimage:bionic-1.0.0 as builder
+FROM phusion/baseimage:focal-1.0.0alpha1-amd64 as builder
 
 LABEL maintainer="dlandon"
 
@@ -23,7 +23,6 @@ COPY defaults/ /root/
 
 RUN	add-apt-repository -y ppa:iconnor/zoneminder-$ZM_VERS && \
 	add-apt-repository ppa:ondrej/php && \
-	add-apt-repository ppa:jonathonf/ffmpeg-4 && \
 	apt-get update && \
 	apt-get -y upgrade -o Dpkg::Options::="--force-confold" && \
 	apt-get -y dist-upgrade -o Dpkg::Options::="--force-confold" && \

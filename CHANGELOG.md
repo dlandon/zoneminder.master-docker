@@ -1,4 +1,6 @@
 #### Change Log
+### 2020-12-31
+- Update Docker baseimage to Focal Alpha (Ubuntu 20.04).
 
 ### 2020-11-18
 - Add NO_START_ZM environment variable to keep MySql and Zoneminder from starting so the docker stays running and a user can troubleshoot.

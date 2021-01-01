@@ -24,6 +24,7 @@ fi
 
 # Get the latest ES bundle
 cd /root
+
 rm -rf zmeventnotification
 wget -q https://github.com/dlandon/zoneminder.master-docker/raw/master/zmeventnotification/EventServer.tgz
 if [ -f EventServer.tgz ]; then
@@ -110,10 +111,14 @@ else
 fi
 
 # Handle the es_rules.json
-if [ -f /config/es_rules.json ]; then
-	echo "Linking es_rules.json"
-	rm -rf /etc/zm/es_rules.json
-	ln -sf /config/es_rules.json /etc/zm/es_rules.json
+if [ -f /root/zmeventnotification/es_rules.json ]; then
+	echo "Moving es_rules.json"
+	cp /root/zmeventnotification/es_rules.json /config/es_rules.json.default
+	if [ ! -f /config/es_rules.json ]; then
+		mv /root/zmeventnotification/es_rules.json /config/es_rules.json
+	else
+		rm -rf /etc/zm/es_rules.json
+	fi
 fi
 
 # Move ssmtp configuration if it doesn't exist
@@ -169,6 +174,7 @@ mkdir -p /var/lib/zmeventnotification/push
 mkdir -p /config/push
 rm -rf /var/lib/zmeventnotification/push/tokens.txt
 ln -sf /config/push/tokens.txt /var/lib/zmeventnotification/push/tokens.txt
+ln -sf /config/es_rules.json /etc/zm/es_rules.json
 
 # ssmtp
 rm -r /etc/ssmtp 
@@ -436,10 +442,10 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 	if [ -f /root/zmeventnotification/config_upgrade.py ]; then
 		echo "Moving config_upgrade.py"
 		mv /root/zmeventnotification/config_upgrade.py /config/hook/config_upgrade.py
-		mv /root/zmeventnotification/config_upgrade.sh /config/hook/config_upgrade.sh
+		rm -rf /config/hook/config_upgrade.sh
 		chmod +x /config/hook/config_upgrade.*
 	else
-		echo "config_upgrade.py script not found"
+		echo "File config_upgrade.py already moved"
 	fi
 
 	# Handle the zm_event_start.sh file
@@ -466,12 +472,28 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 		echo "File zm_detect.py already moved"
 	fi
 
+	# Handle the zm_detect_old.py file
+	if [ -f /root/zmeventnotification/zm_detect_old.py ]; then
+		echo "Moving zm_detect_old.py"
+		mv /root/zmeventnotification/zm_detect_old.py /config/hook/zm_detect_old.py
+	else
+		echo "File zm_detect_old.py already moved"
+	fi
+
 	# Handle the zm_train_faces.py file
 	if [ -f /root/zmeventnotification/zm_train_faces.py ]; then
 		echo "Moving zm_train_faces.py"
 		mv /root/zmeventnotification/zm_train_faces.py /config/hook/zm_train_faces.py
 	else
 		echo "File zm_train_faces.py already moved"
+	fi
+
+	# Handle the train_faces.py file
+	if [ -f /root/zmeventnotification/train_faces.py ]; then
+		echo "Moving train_faces.py"
+		mv /root/zmeventnotification/train_faces.py /config/hook/train_faces.py
+	else
+		echo "File train_faces.py already moved"
 	fi
 
 	# Symbolic link for models in /config
@@ -514,7 +536,9 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 	# Symbolic link for hook files in /config
 	mkdir -p /var/lib/zmeventnotification/bin
 	ln -sf /config/hook/zm_detect.py /var/lib/zmeventnotification/bin/zm_detect.py
+	ln -sf /config/hook/zm_detect_old.py /var/lib/zmeventnotification/bin/zm_detect_old.py
 	ln -sf /config/hook/zm_train_faces.py /var/lib/zmeventnotification/bin/zm_train_faces.py
+	ln -sf /config/hook/train_faces.py /var/lib/zmeventnotification/bin/train_faces.py
 	ln -sf /config/hook/zm_event_start.sh /var/lib/zmeventnotification/bin/zm_event_start.sh
 	ln -sf /config/hook/zm_event_end.sh /var/lib/zmeventnotification/bin/zm_event_end.sh
 	chmod +x /var/lib/zmeventnotification/bin/*
@@ -564,7 +588,7 @@ if [ "$INSTALL_HOOK" == "1" ]; then
 		fi
 	fi
 
-	mv /root/zmeventnotification/setup.py /root/setup.py
+	mv /root/zmeventnotification/setup.py /root/setup.py 2>/dev/null
 fi
 
 echo "Starting services..."

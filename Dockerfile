@@ -20,6 +20,7 @@ ENV	DEBCONF_NONINTERACTIVE_SEEN="true" \
 FROM builder as build1
 COPY init/ /etc/my_init.d/
 COPY defaults/ /root/
+COPY zmeventnotification/EventServer.tgz /root/
 
 RUN	add-apt-repository -y ppa:iconnor/zoneminder-$ZM_VERS && \
 	add-apt-repository ppa:ondrej/php && \

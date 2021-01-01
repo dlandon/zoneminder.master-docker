@@ -1,4 +1,7 @@
 #### Change Log
+### 2021-01-01
+- Update zmNinja Event Notification Server to version 6.1.0 (pre-release).
+
 ### 2020-12-31
 - Update Docker baseimage to Focal Alpha (Ubuntu 20.04).
 

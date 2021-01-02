@@ -329,11 +329,6 @@ chown www-data:www-data /etc/zm/zmeventnotification.ini
 # Symbolink for /config/secrets.ini
 ln -sf /config/secrets.ini /etc/zm/
 
-# Fix memory issue
-echo "Setting shared memory to : $SHMEM of `awk '/MemTotal/ {print $2}' /proc/meminfo` bytes"
-umount /dev/shm
-mount -t tmpfs -o rw,nosuid,nodev,noexec,relatime,size=${SHMEM} tmpfs /dev/shm
-
 # Set multi-ports in apache2 for ES.
 # Start with default configuration.
 cp /etc/apache2/ports.conf.default /etc/apache2/ports.conf

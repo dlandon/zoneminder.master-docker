@@ -1,4 +1,8 @@
 #### Change Log
+### 2021-01-02
+- Remove SHMEM environment variable and set --shm-size instead.
+- Turn off privileged mode.
+
 ### 2021-01-01
 - Update zmNinja Event Notification Server to version 6.1.0 (pre-release).
 

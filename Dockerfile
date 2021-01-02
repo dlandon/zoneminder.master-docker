@@ -13,7 +13,6 @@ ENV	DEBCONF_NONINTERACTIVE_SEEN="true" \
 	TERM="xterm" \
 	PHP_VERS="7.4" \
 	ZM_VERS="master" \
-	SHMEM="50%" \
 	PUID="99" \
 	PGID="100"
 

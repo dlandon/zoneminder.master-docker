@@ -188,6 +188,13 @@ ln -s /config/mysql /var/lib/mysql
 PUID=${PUID:-99}
 PGID=${PGID:-100}
 usermod -o -u $PUID nobody
+
+# Check if the group with GUID passed as environment variable exists and create it if not.
+if ! getent group "$PGID" >/dev/null; then
+  groupadd -g "$PGID" env-provided-group
+  echo "Group with id: $PGID did not already exist, so we created it."
+fi
+
 usermod -g $PGID nobody
 usermod -d /config nobody
 

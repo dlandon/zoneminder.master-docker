@@ -1,4 +1,8 @@
 #### Change Log
+
+### 2021-01-03
+- Fix syslog-ng configuration file version.
+
 ### 2021-01-02
 - Remove SHMEM environment variable and set --shm-size instead.
 - Turn off privileged mode.

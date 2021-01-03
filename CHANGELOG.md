@@ -2,6 +2,7 @@
 
 ### 2021-01-03
 - Fix syslog-ng configuration file version.
+- Update zmNinja Event Notification Server to version 6.1.5.
 
 ### 2021-01-02
 - Remove SHMEM environment variable and set --shm-size instead.

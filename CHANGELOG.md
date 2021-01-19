@@ -1,4 +1,6 @@
 #### Change Log
+### 2021-01-17
+- Prepare for new Docker container with ES/ML preloaded.
 
 ### 2021-01-07
 - Update opencv.sh to Ubuntu 20.04.

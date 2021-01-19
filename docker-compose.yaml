@@ -9,18 +9,11 @@ services:
             - 9000:9000/tcp
         network_mode: "bridge"
         privileged: false
-		shm_size: 8G
+		shm_size=8G
         environment:
             - TZ=America/New_York
-            - SHMEM=50%
             - PUID=99
             - PGID=100
-            - INSTALL_HOOK=0
-            - INSTALL_FACE=0
-            - INSTALL_TINY_YOLO3=0
-            - INSTALL_YOLO3=0
-            - INSTALL_TINY_YOLO4=0
-            - INSTALL_YOLO4=0
             - MULTI_PORT_START=0
             - MULTI_PORT_END=0
         volumes:
